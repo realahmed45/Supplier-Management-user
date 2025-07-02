@@ -14,6 +14,11 @@ import {
   CheckCircle,
   Edit3,
   Eye,
+  Upload,
+  FileText,
+  MessageCircle,
+  Phone,
+  Mail,
 } from "lucide-react";
 import axios from "axios";
 
@@ -26,16 +31,20 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
   // Ensure arrays are initialized
   useEffect(() => {
     updateSupplierData({
-      certifications: supplierData.certifications || [],
+      businessType: supplierData.businessType || [],
       products: supplierData.products || [],
       warehouses: supplierData.warehouses || [],
       shippingMethods: supplierData.shippingMethods || [],
       deliveryAreas: supplierData.deliveryAreas || [],
+      paymentTerms: supplierData.paymentTerms || [],
+      documents: supplierData.documents || [],
+      preferredCurrency: "IDR",
     });
   }, []);
 
   // Form inputs
   const [productInput, setProductInput] = useState({
+    brandName: "",
     name: "",
     category: "",
     description: "",
@@ -47,19 +56,38 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
   });
 
   const [warehouseInput, setWarehouseInput] = useState({
+    warehouseName: "",
     location: "",
-    size: "",
-    capacity: "",
     handlingCapacity: "",
   });
 
-  const [certificationInput, setCertificationInput] = useState("");
-  const [shippingMethodInput, setShippingMethodInput] = useState("");
-  const [deliveryAreaInput, setDeliveryAreaInput] = useState("");
+  const [documentInput, setDocumentInput] = useState({
+    documentId: "",
+    documentImage: null,
+    description: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     updateSupplierData({ [name]: value });
+  };
+
+  // Handle multiple business type selection
+  const handleBusinessTypeChange = (type) => {
+    const currentTypes = supplierData.businessType || [];
+    const updatedTypes = currentTypes.includes(type)
+      ? currentTypes.filter((t) => t !== type)
+      : [...currentTypes, type];
+    updateSupplierData({ businessType: updatedTypes });
+  };
+
+  // Handle checkbox arrays (shipping methods, delivery areas, payment terms)
+  const handleCheckboxChange = (field, value) => {
+    const currentArray = supplierData[field] || [];
+    const updatedArray = currentArray.includes(value)
+      ? currentArray.filter((item) => item !== value)
+      : [...currentArray, value];
+    updateSupplierData({ [field]: updatedArray });
   };
 
   const handleProductChange = (e) => {
@@ -74,7 +102,6 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
       ...productInput,
       minOrderQuantity: Number(productInput.minOrderQuantity) || 0,
       price: Number(productInput.price) || 0,
-      availableQuantity: Number(productInput.availableQuantity) || 0,
     };
 
     updateSupplierData({
@@ -82,6 +109,7 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
     });
 
     setProductInput({
+      brandName: "",
       name: "",
       category: "",
       description: "",
@@ -105,12 +133,10 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
   };
 
   const addWarehouse = () => {
-    if (!warehouseInput.location.trim()) return;
+    if (!warehouseInput.warehouseName.trim()) return;
 
     const newWarehouse = {
       ...warehouseInput,
-      size: Number(warehouseInput.size) || 0,
-      capacity: Number(warehouseInput.capacity) || 0,
       handlingCapacity: Number(warehouseInput.handlingCapacity) || 0,
     };
 
@@ -119,9 +145,8 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
     });
 
     setWarehouseInput({
+      warehouseName: "",
       location: "",
-      size: "",
-      capacity: "",
       handlingCapacity: "",
     });
   };
@@ -132,27 +157,46 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
     updateSupplierData({ warehouses: updatedWarehouses });
   };
 
-  const addItem = (type, input, setInput) => {
-    console.log(`Adding ${type}:`, input);
-    console.log(`Current ${type}:`, supplierData[type]);
-
-    if (!input.trim()) return;
-
-    const currentArray = supplierData[type] || [];
-    const newArray = [...currentArray, input.trim()];
-
-    console.log(`New ${type} array:`, newArray);
-
-    updateSupplierData({
-      [type]: newArray,
-    });
-    setInput("");
+  const handleDocumentChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === "documentImage" && files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setDocumentInput((prev) => ({
+          ...prev,
+          documentImage: e.target.result,
+        }));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      setDocumentInput((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const removeItem = (type, index) => {
-    const currentArray = [...(supplierData[type] || [])];
-    currentArray.splice(index, 1);
-    updateSupplierData({ [type]: currentArray });
+  const addDocument = () => {
+    if (!documentInput.documentId.trim() || !documentInput.documentImage)
+      return;
+
+    const newDocument = {
+      ...documentInput,
+      uploadedAt: new Date().toISOString(),
+    };
+
+    updateSupplierData({
+      documents: [...(supplierData.documents || []), newDocument],
+    });
+
+    setDocumentInput({
+      documentId: "",
+      documentImage: null,
+      description: "",
+    });
+  };
+
+  const removeDocument = (index) => {
+    const updatedDocuments = [...(supplierData.documents || [])];
+    updatedDocuments.splice(index, 1);
+    updateSupplierData({ documents: updatedDocuments });
   };
 
   const handlePreview = () => {
@@ -165,28 +209,19 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
 
     try {
       const businessData = {
-        businessType: supplierData.businessType,
+        businessType: supplierData.businessType || [],
         yearsInBusiness: Number(supplierData.yearsInBusiness) || 0,
-        certifications: supplierData.certifications || [],
         products: supplierData.products || [],
         warehouses: supplierData.warehouses || [],
         shippingMethods: supplierData.shippingMethods || [],
         deliveryAreas: supplierData.deliveryAreas || [],
-        paymentTerms: supplierData.paymentTerms,
-        preferredCurrency: supplierData.preferredCurrency,
+        paymentTerms: supplierData.paymentTerms || [],
+        preferredCurrency: "IDR",
+        documents: supplierData.documents || [],
       };
 
       console.log("=== DEBUG: Final Submit Data ===");
       console.log("Full businessData:", businessData);
-      console.log("shippingMethods:", businessData.shippingMethods);
-      console.log("deliveryAreas:", businessData.deliveryAreas);
-      console.log("shippingMethods type:", typeof businessData.shippingMethods);
-      console.log("deliveryAreas type:", typeof businessData.deliveryAreas);
-      console.log(
-        "shippingMethods length:",
-        businessData.shippingMethods?.length
-      );
-      console.log("deliveryAreas length:", businessData.deliveryAreas?.length);
 
       const response = await axios.patch(
         `https://delicious-emerald-penalty.glitch.me/api/suppliers/${id}/business`,
@@ -197,7 +232,6 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
       navigate("/success");
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      console.error("Full error:", error);
       alert("Error saving business details. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -214,8 +248,9 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
       />
     );
   }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-6 pb-32">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
@@ -249,21 +284,30 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Business Type
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Business Type (Select Multiple)
                 </label>
-                <select
-                  name="businessType"
-                  value={supplierData.businessType || ""}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="">Select Business Type</option>
-                  <option value="Manufacturer">Manufacturer</option>
-                  <option value="Wholesaler">Wholesaler</option>
-                  <option value="Distributor">Distributor</option>
-                  <option value="Other">Other</option>
-                </select>
+                <div className="space-y-2">
+                  {[
+                    "Manufacturer",
+                    "Wholesaler",
+                    "Distributor",
+                    "Importer",
+                    "Other",
+                  ].map((type) => (
+                    <label key={type} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          supplierData.businessType?.includes(type) || false
+                        }
+                        onChange={() => handleBusinessTypeChange(type)}
+                        className="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                      />
+                      <span className="text-gray-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -280,66 +324,6 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                 />
               </div>
             </div>
-
-            {/* Certifications */}
-            <div className="mt-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Award className="text-yellow-500" size={20} />
-                Certifications
-              </label>
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  value={certificationInput}
-                  onChange={(e) => setCertificationInput(e.target.value)}
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Add certification (e.g., ISO 9001)"
-                  onKeyPress={(e) =>
-                    e.key === "Enter" &&
-                    (e.preventDefault(),
-                    addItem(
-                      "certifications",
-                      certificationInput,
-                      setCertificationInput
-                    ))
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    addItem(
-                      "certifications",
-                      certificationInput,
-                      setCertificationInput
-                    )
-                  }
-                  className="px-6 py-3 bg-yellow-600 text-white rounded-xl hover:bg-yellow-700 transition-colors duration-200 flex items-center gap-2"
-                >
-                  <Plus size={20} />
-                  Add
-                </button>
-              </div>
-
-              {supplierData.certifications?.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {supplierData.certifications.map((cert, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center bg-yellow-100 text-yellow-800 px-3 py-2 rounded-full text-sm font-medium"
-                    >
-                      {cert}
-                      <button
-                        type="button"
-                        onClick={() => removeItem("certifications", index)}
-                        className="ml-2 text-yellow-600 hover:text-yellow-800"
-                      >
-                        <X size={16} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Products */}
@@ -352,20 +336,30 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               <input
                 type="text"
+                name="brandName"
+                value={productInput.brandName}
+                onChange={handleProductChange}
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                placeholder="Brand name"
+              />
+              <input
+                type="text"
                 name="name"
                 value={productInput.name}
                 onChange={handleProductChange}
                 className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                 placeholder="Product name"
               />
-              <input
-                type="text"
+              <select
                 name="category"
                 value={productInput.category}
                 onChange={handleProductChange}
                 className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                placeholder="Category"
-              />
+              >
+                <option value="">Select Category</option>
+                <option value="Cement">Cement</option>
+                <option value="Other">Other</option>
+              </select>
               <input
                 type="number"
                 name="minOrderQuantity"
@@ -397,14 +391,22 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                   <option value="pack">Pack</option>
                 </select>
               </div>
-              <input
-                type="number"
+              <select
                 name="availableQuantity"
                 value={productInput.availableQuantity}
                 onChange={handleProductChange}
                 className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                placeholder="Available qty"
-              />
+              >
+                <option value="">Available Quantity</option>
+                <option value="1kg">1kg</option>
+                <option value="2kg">2kg</option>
+                <option value="5kg">5kg</option>
+                <option value="10kg">10kg</option>
+                <option value="20kg">20kg</option>
+                <option value="25kg">25kg</option>
+                <option value="40kg">40kg</option>
+                <option value="50kg">50kg</option>
+              </select>
               <input
                 type="text"
                 name="leadTime"
@@ -438,6 +440,9 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Brand
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
                         Product
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">
@@ -463,6 +468,11 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                         key={index}
                         className="border-b border-gray-100 hover:bg-gray-50"
                       >
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-gray-800">
+                            {product.brandName}
+                          </div>
+                        </td>
                         <td className="py-3 px-4">
                           <div className="font-medium text-gray-800">
                             {product.name}
@@ -512,7 +522,15 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
               Warehouse Information
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <input
+                type="text"
+                name="warehouseName"
+                value={warehouseInput.warehouseName}
+                onChange={handleWarehouseChange}
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                placeholder="Warehouse Name"
+              />
               <input
                 type="text"
                 name="location"
@@ -523,27 +541,11 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
               />
               <input
                 type="number"
-                name="size"
-                value={warehouseInput.size}
-                onChange={handleWarehouseChange}
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                placeholder="Size (sq ft)"
-              />
-              <input
-                type="number"
-                name="capacity"
-                value={warehouseInput.capacity}
-                onChange={handleWarehouseChange}
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                placeholder="Capacity (units)"
-              />
-              <input
-                type="number"
                 name="handlingCapacity"
                 value={warehouseInput.handlingCapacity}
                 onChange={handleWarehouseChange}
                 className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                placeholder="Daily handling"
+                placeholder="Daily handling capacity"
               />
             </div>
 
@@ -565,7 +567,7 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                   >
                     <div className="flex justify-between items-start mb-3">
                       <h4 className="font-bold text-gray-800">
-                        {warehouse.location}
+                        {warehouse.warehouseName}
                       </h4>
                       <button
                         type="button"
@@ -575,17 +577,13 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                         <X size={16} />
                       </button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="text-center p-2 bg-white rounded-lg">
-                        <p className="text-gray-500">Size</p>
-                        <p className="font-semibold">{warehouse.size} sq ft</p>
+                        <p className="text-gray-500">Location</p>
+                        <p className="font-semibold">{warehouse.location}</p>
                       </div>
                       <div className="text-center p-2 bg-white rounded-lg">
-                        <p className="text-gray-500">Capacity</p>
-                        <p className="font-semibold">{warehouse.capacity}</p>
-                      </div>
-                      <div className="text-center p-2 bg-white rounded-lg">
-                        <p className="text-gray-500">Daily</p>
+                        <p className="text-gray-500">Daily Capacity</p>
                         <p className="font-semibold">
                           {warehouse.handlingCapacity}
                         </p>
@@ -609,114 +607,55 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Shipping Methods
+                    Shipping Methods (Select Multiple)
                   </label>
-                  <div className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={shippingMethodInput}
-                      onChange={(e) => setShippingMethodInput(e.target.value)}
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Add shipping method"
-                      onKeyPress={(e) =>
-                        e.key === "Enter" &&
-                        (e.preventDefault(),
-                        addItem(
-                          "shippingMethods",
-                          shippingMethodInput,
-                          setShippingMethodInput
-                        ))
-                      }
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        addItem(
-                          "shippingMethods",
-                          shippingMethodInput,
-                          setShippingMethodInput
-                        )
-                      }
-                      className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200"
-                    >
-                      <Plus size={20} />
-                    </button>
+                  <div className="space-y-2">
+                    {[
+                      "Air Freight",
+                      "Sea Freight",
+                      "Land Transport",
+                      "Express Delivery",
+                      "Standard Delivery",
+                    ].map((method) => (
+                      <label key={method} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={
+                            supplierData.shippingMethods?.includes(method) ||
+                            false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange("shippingMethods", method)
+                          }
+                          className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <span className="text-gray-700">{method}</span>
+                      </label>
+                    ))}
                   </div>
-                  {supplierData.shippingMethods?.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {supplierData.shippingMethods.map((method, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm"
-                        >
-                          {method}
-                          <button
-                            type="button"
-                            onClick={() => removeItem("shippingMethods", index)}
-                            className="ml-2 text-blue-600 hover:text-blue-800"
-                          >
-                            <X size={14} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Delivery Areas
+                    Delivery Areas (Select Multiple)
                   </label>
-                  <div className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={deliveryAreaInput}
-                      onChange={(e) => setDeliveryAreaInput(e.target.value)}
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Add delivery area"
-                      onKeyPress={(e) =>
-                        e.key === "Enter" &&
-                        (e.preventDefault(),
-                        addItem(
-                          "deliveryAreas",
-                          deliveryAreaInput,
-                          setDeliveryAreaInput
-                        ))
-                      }
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        addItem(
-                          "deliveryAreas",
-                          deliveryAreaInput,
-                          setDeliveryAreaInput
-                        )
-                      }
-                      className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200"
-                    >
-                      <Plus size={20} />
-                    </button>
+                  <div className="space-y-2">
+                    {["Seminyak", "Bali"].map((area) => (
+                      <label key={area} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={
+                            supplierData.deliveryAreas?.includes(area) || false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange("deliveryAreas", area)
+                          }
+                          className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        />
+                        <span className="text-gray-700">{area}</span>
+                      </label>
+                    ))}
                   </div>
-                  {supplierData.deliveryAreas?.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {supplierData.deliveryAreas.map((area, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm"
-                        >
-                          {area}
-                          <button
-                            type="button"
-                            onClick={() => removeItem("deliveryAreas", index)}
-                            className="ml-2 text-green-600 hover:text-green-800"
-                          >
-                            <X size={14} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -730,45 +669,132 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Payment Terms
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Payment Terms (Select Multiple)
                   </label>
-                  <select
-                    name="paymentTerms"
-                    value={supplierData.paymentTerms || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="">Select Payment Terms</option>
-                    <option value="Net 30">Net 30</option>
-                    <option value="Net 60">Net 60</option>
-                    <option value="Advance Payment">Advance Payment</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <div className="space-y-2">
+                    {[
+                      "Net 30",
+                      "Net 60",
+                      "Advance Payment",
+                      "Cash on Delivery",
+                      "Other",
+                    ].map((term) => (
+                      <label key={term} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={
+                            supplierData.paymentTerms?.includes(term) || false
+                          }
+                          onChange={() =>
+                            handleCheckboxChange("paymentTerms", term)
+                          }
+                          className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        />
+                        <span className="text-gray-700">{term}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Preferred Currency
                   </label>
-                  <select
-                    name="preferredCurrency"
-                    value={supplierData.preferredCurrency || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="">Select Currency</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
-                    <option value="CAD">CAD</option>
-                    <option value="AUD">AUD</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <input
+                    type="text"
+                    value="IDR"
+                    disabled
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100 text-gray-600"
+                  />
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Document Verification */}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <FileText className="text-red-600" size={24} />
+              ID / Document Verification - No Scam Happens
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <input
+                type="text"
+                name="documentId"
+                value={documentInput.documentId}
+                onChange={handleDocumentChange}
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                placeholder="Document ID / Name"
+              />
+              <div className="relative">
+                <input
+                  type="file"
+                  name="documentImage"
+                  onChange={handleDocumentChange}
+                  accept="image/*"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 flex items-center gap-2 text-gray-600">
+                  <Upload size={20} />
+                  {documentInput.documentImage
+                    ? "Image Selected"
+                    : "Upload Document Image"}
+                </div>
+              </div>
+              <input
+                type="text"
+                name="description"
+                value={documentInput.description}
+                onChange={handleDocumentChange}
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                placeholder="Document Description"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={addDocument}
+              className="mb-6 px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors duration-200 flex items-center gap-2"
+            >
+              <Plus size={20} />
+              Add Document
+            </button>
+
+            {supplierData.documents?.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {supplierData.documents.map((document, index) => (
+                  <div
+                    key={index}
+                    className="bg-red-50 p-4 rounded-xl border border-red-200"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-bold text-gray-800">
+                        {document.documentId}
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => removeDocument(index)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    {document.documentImage && (
+                      <img
+                        src={document.documentImage}
+                        alt="Document"
+                        className="w-full h-32 object-cover rounded-lg mb-2"
+                      />
+                    )}
+                    <p className="text-sm text-gray-600">
+                      {document.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}
@@ -796,6 +822,31 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
           </div>
         </form>
       </div>
+
+      {/* Fixed Support Box */}
+      <div className="fixed bottom-6 right-6 bg-white rounded-2xl shadow-2xl p-6 max-w-sm border-2 border-purple-200 z-50">
+        <div className="flex items-start gap-3">
+          <div className="bg-purple-100 p-2 rounded-full">
+            <MessageCircle className="text-purple-600" size={20} />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-gray-800 mb-2">Need Help?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Reach out to us while you need help filling this form
+            </p>
+            <div className="space-y-2">
+              <button className="w-full flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                <Phone size={16} />
+                Call Support
+              </button>
+              <button className="w-full flex items-center gap-2 px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors text-sm">
+                <Mail size={16} />
+                Email Us
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -809,7 +860,7 @@ const ConfirmationPanel = ({
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           <div className="text-center mb-8">
             <CheckCircle className="mx-auto text-green-600 mb-4" size={48} />
@@ -822,10 +873,11 @@ const ConfirmationPanel = ({
             </p>
           </div>
 
-          {/* Profile Summary */}
+          {/* Company Profile & Business Summary */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Building2 className="text-blue-600" size={20} />
                 Company Profile
               </h3>
               <div className="space-y-3">
@@ -858,7 +910,7 @@ const ConfirmationPanel = ({
                     Business Type:
                   </span>
                   <span className="ml-2 text-gray-800">
-                    {supplierData.businessType || "Not specified"}
+                    {supplierData.businessType?.join(", ") || "Not specified"}
                   </span>
                 </div>
                 <div>
@@ -895,11 +947,11 @@ const ConfirmationPanel = ({
                   <p className="text-sm text-gray-600">Warehouses</p>
                 </div>
                 <div className="text-center p-3 bg-white rounded-lg">
-                  <Award className="mx-auto text-yellow-500 mb-1" size={20} />
+                  <FileText className="mx-auto text-red-500 mb-1" size={20} />
                   <p className="text-2xl font-bold text-gray-800">
-                    {supplierData.certifications?.length || 0}
+                    {supplierData.documents?.length || 0}
                   </p>
-                  <p className="text-sm text-gray-600">Certifications</p>
+                  <p className="text-sm text-gray-600">Documents</p>
                 </div>
                 <div className="text-center p-3 bg-white rounded-lg">
                   <Truck className="mx-auto text-blue-500 mb-1" size={20} />
@@ -911,6 +963,265 @@ const ConfirmationPanel = ({
               </div>
             </div>
           </div>
+
+          {/* Detailed Product Information */}
+          {supplierData.products?.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Package className="text-green-600" size={24} />
+                Product Details
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-gray-200">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Brand
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Product
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Category
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Min Qty
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Price
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Available
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                        Lead Time
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {supplierData.products.map((product, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-gray-100 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4 font-medium text-gray-800">
+                          {product.brandName}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-gray-800">
+                            {product.name}
+                          </div>
+                          {product.description && (
+                            <div className="text-sm text-gray-500 mt-1">
+                              {product.description}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                            {product.category}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600">
+                          {product.minOrderQuantity}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-green-600">
+                            {product.price} {product.unit}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                            {product.availableQuantity}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600">
+                          {product.leadTime}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Detailed Warehouse Information */}
+          {supplierData.warehouses?.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Warehouse className="text-orange-600" size={24} />
+                Warehouse Details ({supplierData.warehouses.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {supplierData.warehouses.map((warehouse, index) => (
+                  <div
+                    key={index}
+                    className="bg-orange-50 p-6 rounded-xl border border-orange-200"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <Warehouse className="text-orange-600" size={20} />
+                      <h4 className="font-bold text-gray-800 text-lg">
+                        {warehouse.warehouseName || `Warehouse ${index + 1}`}
+                      </h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="bg-white p-3 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600 font-medium">
+                            Location:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            {warehouse.location || "Not specified"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600 font-medium">
+                            Daily Handling Capacity:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            {warehouse.handlingCapacity
+                              ? `${warehouse.handlingCapacity} units`
+                              : "Not specified"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Logistics & Payment Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Truck className="text-blue-600" size={24} />
+                Logistics Details
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-3">
+                    Shipping Methods:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {supplierData.shippingMethods?.length > 0 ? (
+                      supplierData.shippingMethods.map((method, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                        >
+                          {method}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-500 italic">
+                        None selected
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-3">
+                    Delivery Areas:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {supplierData.deliveryAreas?.length > 0 ? (
+                      supplierData.deliveryAreas.map((area, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                        >
+                          {area}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-500 italic">
+                        None selected
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <DollarSign className="text-green-600" size={24} />
+                Payment Details
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-3">
+                    Payment Terms:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {supplierData.paymentTerms?.length > 0 ? (
+                      supplierData.paymentTerms.map((term, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                        >
+                          {term}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-500 italic">
+                        None selected
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-3">
+                    Preferred Currency:
+                  </h4>
+                  <span className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg font-semibold">
+                    IDR (Indonesian Rupiah)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Document Verification Details */}
+          {supplierData.documents?.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <FileText className="text-red-600" size={24} />
+                Document Verification
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {supplierData.documents.map((document, index) => (
+                  <div
+                    key={index}
+                    className="bg-red-50 p-6 rounded-xl border border-red-200"
+                  >
+                    <h4 className="font-bold text-gray-800 text-lg mb-3">
+                      {document.documentId}
+                    </h4>
+                    {document.documentImage && (
+                      <img
+                        src={document.documentImage}
+                        alt="Document"
+                        className="w-full h-32 object-cover rounded-lg mb-3 border"
+                      />
+                    )}
+                    <p className="text-sm text-gray-600 mb-2">
+                      <strong>Description:</strong> {document.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Uploaded:{" "}
+                      {new Date(document.uploadedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4">
