@@ -330,7 +330,6 @@ const ProfilePage = ({ supplierData, updateSupplierData }) => {
                       size={20}
                     />
                     <input
-                      type="url"
                       name="website"
                       value={supplierData.website || ""}
                       onChange={handleChange}
