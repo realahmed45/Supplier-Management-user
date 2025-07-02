@@ -189,7 +189,8 @@ const SubmissionSuccess = () => {
             </h3>
             <p className="text-gray-600 leading-relaxed">
               You'll receive a detailed email with next steps and any additional
-              requirements or documentation needed.
+              requirements or documentation needed. You can also call us on this
+              number 08-xxxxxx
             </p>
             <div className="mt-4 flex items-center justify-center">
               <Clock className="h-5 w-5 text-blue-500 mr-2" />
@@ -339,7 +340,7 @@ const SubmissionSuccess = () => {
             <div className="flex flex-col items-center text-center p-4 bg-white bg-opacity-10 rounded-xl backdrop-blur-sm">
               <MapPin className="h-8 w-8 mb-3" />
               <h4 className="font-bold mb-1">Location</h4>
-              <span className="text-sm opacity-90">Global Operations</span>
+              <span className="text-sm opacity-90">Indonesia</span>
             </div>
           </div>
         </div>
@@ -387,7 +388,7 @@ const SubmissionSuccess = () => {
                   <h4 className="text-lg font-bold text-gray-800">
                     Initial Review & Verification
                   </h4>
-                  <p className="text-gray-600">1-2 Business Days</p>
+                  <p className="text-gray-600">4-5 Business Days</p>
                   <p className="text-sm text-yellow-600 mt-1">
                     Document verification in progress
                   </p>
@@ -414,7 +415,7 @@ const SubmissionSuccess = () => {
                   <h4 className="text-lg font-bold text-gray-800">
                     Comprehensive Assessment
                   </h4>
-                  <p className="text-gray-600">2-4 Business Days</p>
+                  <p className="text-gray-600">5-7 Business Days</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Quality and compliance evaluation
                   </p>
@@ -437,7 +438,7 @@ const SubmissionSuccess = () => {
                   <h4 className="text-lg font-bold text-gray-800">
                     Final Decision & Notification
                   </h4>
-                  <p className="text-gray-600">5-7 Business Days</p>
+                  <p className="text-gray-600">7-14 Business Days</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Decision communication and next steps
                   </p>
@@ -465,6 +466,7 @@ const SubmissionSuccess = () => {
             <h4 className="font-bold text-gray-800 mb-2">Quality Standards</h4>
             <p className="text-gray-600 text-sm">
               Learn about our quality requirements and certification processes
+              by calling us
             </p>
           </div>
 
@@ -472,7 +474,8 @@ const SubmissionSuccess = () => {
             <Package className="h-12 w-12 text-blue-500 mx-auto mb-4" />
             <h4 className="font-bold text-gray-800 mb-2">Product Guidelines</h4>
             <p className="text-gray-600 text-sm">
-              Understand our product specifications and delivery requirements
+              You can add new products at any time and upload additional
+              documentation whenever needed.
             </p>
           </div>
 
@@ -480,7 +483,9 @@ const SubmissionSuccess = () => {
             <Warehouse className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h4 className="font-bold text-gray-800 mb-2">Logistics Info</h4>
             <p className="text-gray-600 text-sm">
-              Review our shipping and warehousing requirements
+              All our deliveries and purchases are conducted strictly under EXW
+              (Ex Works) or DDP (Delivered Duty Paid) Incoterms, subject to
+              mutual agreement.
             </p>
           </div>
 
@@ -488,9 +493,19 @@ const SubmissionSuccess = () => {
             <Users className="h-12 w-12 text-purple-500 mx-auto mb-4" />
             <h4 className="font-bold text-gray-800 mb-2">Support Center</h4>
             <p className="text-gray-600 text-sm">
-              Access our comprehensive supplier support resources
+              Access our comprehensive supplier support resources. Call us for
+              our support and to know how we work. 08-xxxxxxxx
             </p>
           </div>
+        </div>
+
+        {/* Image Section */}
+        <div className="mb-12 flex justify-center">
+          <img
+            src="https://shipexpert.com/wp-content/uploads/2020/10/shipping-incoterms-explained-infographic.png"
+            alt="Shipping Incoterms Explained"
+            className="rounded-2xl shadow-lg max-w-full h-auto"
+          />
         </div>
 
         {/* Action Buttons */}

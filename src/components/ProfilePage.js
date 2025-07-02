@@ -8,6 +8,7 @@ import {
   MapPin,
   Globe,
   CreditCard,
+  MessageCircle,
   Upload,
   AlertCircle,
   Camera,
@@ -198,6 +199,28 @@ const ProfilePage = ({ supplierData, updateSupplierData }) => {
               </p>
             </div>
 
+            {/* Fixed Support Box */}
+            <div className="fixed top-10   right-2 bg-white rounded-2xl shadow-2xl p-6 max-w-sm border-2 border-purple-200 z-50">
+              <div className="flex items-start gap-3">
+                <div className="bg-purple-100 p-2 rounded-full">
+                  <MessageCircle className="text-purple-600" size={20} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-extrabold text-gray-800 mb-2">
+                    Need Help?
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Reach out to us while you need help filling this form
+                  </p>
+                  <div className="space-y-2">
+                    <button className="w-full flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                      <Phone size={16} />
+                      Call +620864322626
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* Company Information */}
             <div>
               <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
