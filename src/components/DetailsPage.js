@@ -394,22 +394,35 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
                   <option value="pack">Pack</option>
                 </select>
               </div>
-              <select
-                name="availableQuantity"
-                value={productInput.availableQuantity}
-                onChange={handleProductChange}
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="">Available Quantity</option>
-                <option value="1kg">1kg</option>
-                <option value="2kg">2kg</option>
-                <option value="5kg">5kg</option>
-                <option value="10kg">10kg</option>
-                <option value="20kg">20kg</option>
-                <option value="25kg">25kg</option>
-                <option value="40kg">40kg</option>
-                <option value="50kg">50kg</option>
-              </select>
+
+              {productInput.category === "Cement" ? (
+                <select
+                  name="availableQuantity"
+                  value={productInput.availableQuantity}
+                  onChange={handleProductChange}
+                  className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Available Quantity</option>
+                  <option value="1kg">1kg</option>
+                  <option value="2kg">2kg</option>
+                  <option value="5kg">5kg</option>
+                  <option value="10kg">10kg</option>
+                  <option value="20kg">20kg</option>
+                  <option value="25kg">25kg</option>
+                  <option value="40kg">40kg</option>
+                  <option value="50kg">50kg</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  name="availableQuantity"
+                  value={productInput.availableQuantity}
+                  onChange={handleProductChange}
+                  className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Available quantity"
+                />
+              )}
+
               <input
                 type="text"
                 name="leadTime"
@@ -517,7 +530,6 @@ const DetailsPage = ({ supplierData, updateSupplierData }) => {
               </div>
             )}
           </div>
-
           {/* Warehouses */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">

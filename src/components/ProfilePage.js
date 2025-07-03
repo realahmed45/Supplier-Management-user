@@ -455,10 +455,9 @@ const ProfilePage = ({ supplierData, updateSupplierData }) => {
                   <input
                     type="text"
                     name="address.country"
-                    value={supplierData.address?.country || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter country"
+                    value="Indonesia"
+                    readOnly
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100 cursor-not-allowed"
                   />
                 </div>
               </div>
