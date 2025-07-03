@@ -154,8 +154,7 @@ const SubmissionSuccess = () => {
               Application Received
             </h3>
             <p className="text-gray-600 leading-relaxed">
-              Your comprehensive supplier application has been successfully
-              submitted and securely logged in our procurement system.
+              Your application has been recived
             </p>
             <div className="mt-4 flex items-center justify-center">
               <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
@@ -171,8 +170,10 @@ const SubmissionSuccess = () => {
               Under Review
             </h3>
             <p className="text-gray-600 leading-relaxed">
-              Our expert procurement team will thoroughly review your
-              information and verify all credentials within 3-5 business days.
+              Your application is under review. Please allow 3 to 5 business
+              days. If you need any help with adding more products or have
+              questions about your application, feel free to call
+              us at this number
             </p>
             <div className="mt-4 flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -188,9 +189,7 @@ const SubmissionSuccess = () => {
               Team Contact
             </h3>
             <p className="text-gray-600 leading-relaxed">
-              You'll receive a detailed email with next steps and any additional
-              requirements or documentation needed. You can also call us on this
-              number 08-xxxxxx
+              for any help call this number 08xxxxxx
             </p>
             <div className="mt-4 flex items-center justify-center">
               <Clock className="h-5 w-5 text-blue-500 mr-2" />
@@ -216,11 +215,7 @@ const SubmissionSuccess = () => {
                   <h4 className="text-lg font-bold text-gray-800 mb-2">
                     Document Verification
                   </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Our compliance team will verify your business credentials,
-                    certifications, and legal documentation to ensure regulatory
-                    compliance.
-                  </p>
+                  <p className="text-gray-600 leading-relaxed"></p>
                 </div>
               </div>
 
@@ -232,11 +227,7 @@ const SubmissionSuccess = () => {
                   <h4 className="text-lg font-bold text-gray-800 mb-2">
                     Quality Assessment
                   </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    Our procurement specialists will evaluate your product
-                    portfolio, capabilities, and quality standards against our
-                    requirements.
-                  </p>
+                  <p className="text-gray-600 leading-relaxed"></p>
                 </div>
               </div>
 
@@ -248,11 +239,7 @@ const SubmissionSuccess = () => {
                   <h4 className="text-lg font-bold text-gray-800 mb-2">
                     Compliance Check
                   </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    We'll ensure all regulatory, safety, and compliance
-                    requirements are met according to industry standards and
-                    regulations.
-                  </p>
+                  <p className="text-gray-600 leading-relaxed"></p>
                 </div>
               </div>
             </div>
@@ -299,9 +286,7 @@ const SubmissionSuccess = () => {
                     Partnership Launch
                   </h4>
                   <p className="text-gray-600 leading-relaxed">
-                    Begin receiving purchase orders, accessing our procurement
-                    platform, and building a successful long-term business
-                    relationship.
+                    Begin receiving purchase orders and do business with us.
                   </p>
                 </div>
               </div>
@@ -314,11 +299,7 @@ const SubmissionSuccess = () => {
           <div className="text-center mb-8">
             <Mail className="h-16 w-16 mx-auto mb-6 opacity-90" />
             <h3 className="text-2xl font-bold mb-4">Stay Connected</h3>
-            <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto leading-relaxed">
-              We'll keep you updated throughout the entire review process via
-              email. Our dedicated supplier relations team is here to assist you
-              with any questions or concerns.
-            </p>
+            <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto leading-relaxed"></p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -404,7 +385,8 @@ const SubmissionSuccess = () => {
                       🔄 In Progress
                     </p>
                     <p className="text-yellow-600 text-sm">
-                      Currently under review
+                      Add more product and help with profile ,call us on
+                      08-xxxxxx and we help you
                     </p>
                   </div>
                 </div>
@@ -427,7 +409,8 @@ const SubmissionSuccess = () => {
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-gray-700 font-medium">⏳ Pending</p>
                     <p className="text-gray-600 text-sm">
-                      Awaiting initial review completion
+                      Add more product and help with profile ,call us on
+                      08-xxxxxx and we help you
                     </p>
                   </div>
                 </div>
@@ -450,7 +433,8 @@ const SubmissionSuccess = () => {
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-gray-700 font-medium">⏳ Pending</p>
                     <p className="text-gray-600 text-sm">
-                      Final review and decision
+                      Add more product and help with profile ,call us on
+                      08-xxxxxx and we help you
                     </p>
                   </div>
                 </div>
